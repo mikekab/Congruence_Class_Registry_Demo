@@ -4,20 +4,22 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.TreeMultimap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
-
 public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends Op_Name_Type> implements Congruence_Cls_Registry_Interface<Op_Name> {
-    Map<RegistryElement, RBES> CongruenceMap;// similar to a parent array
-    Map<String, String> ClassTagMap;// Not implemented yet
 
+    static Map<RegistryElement, RBES> CongruenceMap;// similar to a parent array
+    static Multimap<RBES, RegistryElement> CongruMapInverse;
+    Map<String, String> ClassTagMap;// Not implemented yet
     static final String CLS = "CC_";// String to use that precedes an RBES id
 
     public Congruence_Cls_Registry_Union_Find_Implementation() {
         CongruenceMap = new TreeMap<RegistryElement, RBES>();
+        CongruMapInverse = TreeMultimap.<RBES, RegistryElement>create();
     }
 
     // Appends A_Lst to Op_Name's id and adds to registry
@@ -29,8 +31,10 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
         RBES newClassId = new RBES();
         // add new RBES as root of tree
         CongruenceMap.put(newClassId.toRegistryElement(), newClassId);
+        CongruMapInverse.put(newClassId, newClassId.toRegistryElement());
         // add new expr as child of new RBES
         CongruenceMap.put(newExpr, newClassId);
+        CongruMapInverse.put(newClassId, newExpr);
     }
 
     // True if no equivalent expression is in registry
@@ -79,7 +83,9 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
             assert (parent != null);
         }
         while (!toUpdate.isEmpty()) {
-            CongruenceMap.put(toUpdate.pop(), parent);
+            RBES toRemove = CongruenceMap.put(toUpdate.peek(), parent);
+            CongruMapInverse.remove(toRemove, toUpdate.peek());
+            CongruMapInverse.put(parent, toUpdate.pop());
         }
         return parent;
     }
@@ -97,13 +103,14 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
     }
     // Requires the equivalent expr to already be in reg
     // i.e. op cant be null
+
     @Override
     public RBES Get_RBEC_for(CSC_Lst A_Lst, Op_Name Op) {
         // Ensure arguments are roots
-        if(A_Lst!=null){
-        A_Lst = GetRootedArgList(A_Lst);
-        return CompressingFind(new RegistryElement(Op, A_Lst));}
-        else{
+        if (A_Lst != null) {
+            A_Lst = GetRootedArgList(A_Lst);
+            return CompressingFind(new RegistryElement(Op, A_Lst));
+        } else {
             return CompressingFind(new RegistryElement(Op));
         }
     }
@@ -111,24 +118,26 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
     // Does a union based on rank
     @Override
     public void Make_Congruent(RBES S, RBES T) {
-        if (S.numMembers > T.numMembers) {
-            S.numMembers--;
-            T.numMembers++;
-            CongruenceMap.put(S.toRegistryElement(), T);
-        } else {
-            S.numMembers++;
-            T.numMembers--;
-            CongruenceMap.put(T.toRegistryElement(), S);
+        if (S.numMembers < T.numMembers) {
+            RBES temp = T;
+            T = S;
+            S = temp;
         }
+        S.numMembers++;
+        T.numMembers--;
+        RBES overwritten = CongruenceMap.put(T.toRegistryElement(), S);
+        CongruMapInverse.remove(overwritten, T.toRegistryElement());
+        CongruMapInverse.put(S, T.toRegistryElement());
+
     }
 
     // Inverts the Congruence map and shows the translated contents by values.
     @Override
     public String showRegistry(String title) {
-        String rStr = title + "\nValues\tKeys\n------\t----";
+        String rStr = title + "\nClass\tMembers\n------\t----";
 
-        SetMultimap<RegistryElement, RBES> multimap = Multimaps.forMap(CongruenceMap);
-        Multimap<RBES, RegistryElement> inverse = Multimaps.invertFrom(multimap, HashMultimap.<RBES, RegistryElement>create());
+        //SetMultimap<RegistryElement, RBES> multimap = Multimaps.forMap(CongruenceMap);
+        Multimap<RBES, RegistryElement> inverse = CongruMapInverse;//Multimaps.invertFrom(multimap, HashMultimap.<RBES, RegistryElement>create());
         for (RBES classId : inverse.keySet()) {
             rStr += "\n" + CLS + classId.id + " <-\n";
             Iterator<RegistryElement> exp = inverse.get(classId).iterator();
@@ -158,5 +167,4 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
         }
         return rStr;
     }
-
 }

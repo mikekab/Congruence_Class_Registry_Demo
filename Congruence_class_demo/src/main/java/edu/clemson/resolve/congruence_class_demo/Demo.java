@@ -105,7 +105,9 @@ public class Demo {
         CSC_Lst args = new CSC_Lst();
         args.members.add(e1);
         args.members.add(e2);
-        CCR.Add_CC_for(args, new Op_Name_Type("+"));
+        if(CCR.Would_be_Ext(args, new Op_Name_Type("+"))){
+            CCR.Add_CC_for(args, new Op_Name_Type("+"));
+        }
         e1 = CCR.Get_RBEC_for(args, new Op_Name_Type("+"));
         e2 = CCR.Get_RBEC_for(null, new Op_Name_Type("z"));
         CCR.Make_Congruent(e1, e2); // z = (x+y)+c
