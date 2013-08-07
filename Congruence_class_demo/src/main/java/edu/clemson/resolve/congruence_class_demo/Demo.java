@@ -111,6 +111,7 @@ public class Demo {
         e1 = CCR.Get_RBEC_for(args, new Op_Name_Type("+"));
         e2 = CCR.Get_RBEC_for(null, new Op_Name_Type("z"));
         CCR.Make_Congruent(e1, e2); // z = (x+y)+c
+            print(CCR.showRegistry(null));
         
         e1 = addAnExpression("y");
         e2 = addAnExpression("b");

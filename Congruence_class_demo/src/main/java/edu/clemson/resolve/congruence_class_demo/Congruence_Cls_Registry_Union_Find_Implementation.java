@@ -1,9 +1,6 @@
 package edu.clemson.resolve.congruence_class_demo;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,6 +26,7 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
     public void Add_CC_for(CSC_Lst A_Lst, Op_Name Op) {
         RegistryElement newExpr = new RegistryElement(Op, A_Lst);
         RBES newClassId = new RBES();
+        newClassId.numMembers++;
         // add new RBES as root of tree
         CongruenceMap.put(newClassId.toRegistryElement(), newClassId);
         CongruMapInverse.put(newClassId, newClassId.toRegistryElement());
@@ -84,6 +82,8 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
         }
         while (!toUpdate.isEmpty()) {
             RBES toRemove = CongruenceMap.put(toUpdate.peek(), parent);
+            toRemove.numMembers--;
+            parent.numMembers++;
             CongruMapInverse.remove(toRemove, toUpdate.peek());
             CongruMapInverse.put(parent, toUpdate.pop());
         }
@@ -128,6 +128,14 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
         RBES overwritten = CongruenceMap.put(T.toRegistryElement(), S);
         CongruMapInverse.remove(overwritten, T.toRegistryElement());
         CongruMapInverse.put(S, T.toRegistryElement());
+        // for all RegistryElements that contain overwritten in their CSC_Lst
+        //  replace overwritten with S
+        for(RegistryElement reg : CongruenceMap.keySet()){
+            if(reg.A_Lst!=null && reg.A_Lst.members.contains(overwritten)){
+                int index = reg.A_Lst.members.indexOf(overwritten);
+                reg.A_Lst.members.set(index,S);
+            }
+        }
 
     }
 
