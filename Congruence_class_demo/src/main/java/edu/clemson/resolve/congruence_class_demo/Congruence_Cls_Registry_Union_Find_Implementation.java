@@ -1,6 +1,9 @@
 package edu.clemson.resolve.congruence_class_demo;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
 import java.util.Iterator;
 import java.util.Map;
@@ -132,8 +135,14 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
         //  replace overwritten with S
         for(RegistryElement reg : CongruenceMap.keySet()){
             if(reg.A_Lst!=null && reg.A_Lst.members.contains(overwritten)){
+                RBES whatRegMapsTo = CongruenceMap.get(reg);
+                CongruenceMap.remove(reg);
+                CongruMapInverse.remove(whatRegMapsTo, reg);
                 int index = reg.A_Lst.members.indexOf(overwritten);
                 reg.A_Lst.members.set(index,S);
+                // Overwrite old map entry (otherwise it won't sort correctly)
+                CongruenceMap.put(reg, whatRegMapsTo);
+                CongruMapInverse.put(whatRegMapsTo,reg);
             }
         }
 
@@ -144,8 +153,8 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
     public String showRegistry(String title) {
         String rStr = title + "\nClass\tMembers\n------\t----";
 
-        //SetMultimap<RegistryElement, RBES> multimap = Multimaps.forMap(CongruenceMap);
-        Multimap<RBES, RegistryElement> inverse = CongruMapInverse;//Multimaps.invertFrom(multimap, HashMultimap.<RBES, RegistryElement>create());
+        SetMultimap<RegistryElement, RBES> multimap = Multimaps.forMap(CongruenceMap);
+        Multimap<RBES, RegistryElement> inverse = Multimaps.invertFrom(multimap, HashMultimap.<RBES, RegistryElement>create());
         for (RBES classId : inverse.keySet()) {
             rStr += "\n" + CLS + classId.id + " <-\n";
             Iterator<RegistryElement> exp = inverse.get(classId).iterator();
