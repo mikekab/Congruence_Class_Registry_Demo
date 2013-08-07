@@ -8,6 +8,8 @@ public class App {
         d.run_example1();
         RBES.static_id = 1;
         d.run_example2();
+        RBES.static_id = 1;
+        d.run_example3();
         
     }
 }

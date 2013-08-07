@@ -111,7 +111,6 @@ public class Demo {
         e1 = CCR.Get_RBEC_for(args, new Op_Name_Type("+"));
         e2 = CCR.Get_RBEC_for(null, new Op_Name_Type("z"));
         CCR.Make_Congruent(e1, e2); // z = (x+y)+c
-            print(CCR.showRegistry(null));
         
         e1 = addAnExpression("y");
         e2 = addAnExpression("b");
@@ -141,6 +140,58 @@ public class Demo {
         
         print(CCR.showRegistry("Result of adding the following:\n"
                 + "x=a\nz=(x+y)+c\ny=b\nc=a+b\n((x+y)+(x+y))+c Root: " + e1.id + " z+c Root: " + e2.id));
+        
+    }
+    
+    // trying differnt order in subsequent
+    void run_example3() {
+        CCR = new Congruence_Cls_Registry_Union_Find_Implementation();
+        String[] opNames = {"a", "b", "c", "x", "y", "z", "+"};
+        new Op_Name_Type(opNames);
+         
+        RBES e1 = addAnExpression("x");
+        RBES e2 = addAnExpression("a");
+        CCR.Make_Congruent(e1, e2); // x = a
+        addAnExpression("z");
+        e1 = addAnExpression("+,x,y");
+        e2 = addAnExpression("c");
+        CSC_Lst args = new CSC_Lst();
+        args.members.add(e1);
+        args.members.add(e2);
+        if(CCR.Would_be_Ext(args, new Op_Name_Type("+"))){
+            CCR.Add_CC_for(args, new Op_Name_Type("+"));
+        }
+        e1 = CCR.Get_RBEC_for(args, new Op_Name_Type("+"));
+        e2 = CCR.Get_RBEC_for(null, new Op_Name_Type("z"));
+        CCR.Make_Congruent(e1, e2); // z = (x+y)+c
+      
+        e1 = addAnExpression("y");
+        e2 = addAnExpression("b");
+        CCR.Make_Congruent(e1, e2); // y = b
+        
+        e1 = CCR.Get_RBEC_for(null, new Op_Name_Type("c"));
+        e2 = addAnExpression("+,a,b");
+        CCR.Make_Congruent(e1, e2); // c = a +b
+   
+        e1 = addAnExpression("+,x,y"); // will return preexisting rbec for x+y
+        args = new CSC_Lst();
+        args.members.add(e1);
+        args.members.add(addAnExpression("c"));
+        if(CCR.Would_be_Ext(args, new Op_Name_Type("+"))){
+            CCR.Add_CC_for(args, new Op_Name_Type("+"));  // adds (x+y)+c as an expr
+        }
+        e1 = CCR.Get_RBEC_for(args, new Op_Name_Type("+"));
+        args = new CSC_Lst();
+        args.members.add(e1);    
+        args.members.add(addAnExpression("+,x,y"));
+        if(CCR.Would_be_Ext(args, new Op_Name_Type("+"))){
+            CCR.Add_CC_for(args, new Op_Name_Type("+")); // adds ((x+y)+c)+(x+y)
+        }
+        e1 = CCR.Get_RBEC_for(args, new Op_Name_Type("+"));
+        e2 = addAnExpression("+,z,c");
+        
+        print(CCR.showRegistry("Result of adding the following:\n"
+                + "x=a\nz=(x+y)+c\ny=b\nc=a+b\n((x+y)+c)+(x+y) Root: " + e1.id + " z+c Root: " + e2.id));
         
     }
 }
