@@ -141,7 +141,8 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
                 int index = reg.A_Lst.members.indexOf(overwritten);
                 reg.A_Lst.members.set(index,S);
                 // Overwrite old map entry (otherwise it won't sort correctly)
-                CongruenceMap.put(reg, whatRegMapsTo);
+                RBES oldValue = CongruenceMap.put(reg, whatRegMapsTo);
+                CongruMapInverse.remove(oldValue, reg);
                 CongruMapInverse.put(whatRegMapsTo,reg);
             }
         }
@@ -153,8 +154,8 @@ public class Congruence_Cls_Registry_Union_Find_Implementation<Op_Name extends O
     public String showRegistry(String title) {
         String rStr = title + "\nClass\tMembers\n------\t----";
 
-        SetMultimap<RegistryElement, RBES> multimap = Multimaps.forMap(CongruenceMap);
-        Multimap<RBES, RegistryElement> inverse = Multimaps.invertFrom(multimap, HashMultimap.<RBES, RegistryElement>create());
+        //SetMultimap<RegistryElement, RBES> multimap = Multimaps.forMap(CongruenceMap);
+        Multimap<RBES, RegistryElement> inverse = CongruMapInverse;//Multimaps.invertFrom(multimap, TreeMultimap.<RBES, RegistryElement>create());
         for (RBES classId : inverse.keySet()) {
             rStr += "\n" + CLS + classId.id + " <-\n";
             Iterator<RegistryElement> exp = inverse.get(classId).iterator();
